@@ -1,0 +1,58 @@
+package com.app.productos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.annotation.Rollback;
+
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = Replace.NONE)
+public class ProductoTests {
+	
+	@Autowired
+	private ProductoRepositorio repositorio;
+	
+	@Test
+	@Rollback(false)
+	public void testGuardarProducto() {
+		Producto producto = new Producto("Televisor SmartTV LG", 12000);
+		Producto productoGuardado = repositorio.save(producto);
+		
+		assertNotNull(productoGuardado);
+	}
+	
+	@Test
+	public void testBuscarProductoPorNombre() {
+		String nombre = "Televisor SmartTV LG";
+		Producto producto = repositorio.findByNombre(nombre);
+		
+		assertThat(producto.getNombre()).isEqualTo(nombre);
+	}
+	
+	@Test
+	public void testBuscarProductoPorNombreNoExistente() {
+		String nombre = "Iphone 11";
+		Producto producto = repositorio.findByNombre(nombre);
+		
+		assertNull(producto);
+	}
+	
+	@Test
+	@Rollback(false)
+	public void testActualizarProducto() {
+		String nombreProducto = "Televisor Samsung"; //nuevo valor
+		Producto producto = new Producto(nombreProducto, 15000); //valores nuevos
+		producto.setId(1); //id del producto a modificar
+		
+		repositorio.save(producto);
+		
+		Producto productoActualizado = repositorio.findByNombre(nombreProducto);
+		assertThat(productoActualizado.getNombre()).isEqualTo(nombreProducto);
+	}
+}
